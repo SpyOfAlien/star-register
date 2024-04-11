@@ -44,7 +44,7 @@ class Blockchain {
    */
   getChainHeight() {
     return new Promise((resolve, reject) => {
-      resolve(this.height);
+      resolve(this.height === -1 ? 0 : this.height);
     });
   }
 
@@ -64,7 +64,7 @@ class Blockchain {
     let self = this;
     return new Promise(async (resolve, reject) => {
       // Assign block height
-      block.height = (await self.getChainHeight()) + 1;
+      block.height = await self.getChainHeight();
 
       // Get timestamp and asign to block
       block.time = self.getTimestamp();
@@ -205,15 +205,18 @@ class Blockchain {
    */
   getStarsByWalletAddress(address) {
     let self = this;
-    let stars = [];
     return new Promise((resolve, reject) => {
-      // Filter the chain for the blocks with the address
-      const blocks = self.chain.filter(
-        (block) => block.getBData().address === address
-      );
+      // Filter the chain to get the stars that owner by the address
+      const stars =
+        self.chain.filter((block) => {
+          const blockData = block.getBlockData();
 
-      // Decode the data and push to stars array
-      blocks.forEach((block) => stars.push(block.getBData()));
+          if (blockData && blockData.address === address) {
+            return blockData;
+          }
+
+          return null;
+        }) || [];
 
       // Resolve with the stars array
       resolve(stars);
@@ -246,6 +249,9 @@ class Blockchain {
           errorLog.push(`Block ${block.height} previous hash is invalid`);
         }
       }
+
+      // Resolve with the error log
+      resolve(errorLog);
     });
   }
 

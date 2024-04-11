@@ -69,7 +69,7 @@ class Block {
    *  3. Resolve with the data and make sure that you don't need to return the data for the `genesis block`
    *     or Reject with an error.
    */
-  getBData() {
+  getBlockData() {
     // Getting the encoded data saved in the Block
     const encodedData = this.body;
 
